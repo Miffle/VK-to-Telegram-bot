@@ -3,6 +3,7 @@ import vk_api
 import telebot
 import Info
 import last_message
+import time
 import threading
 
 session = vk_api.VkApi(token=Info.vk_TOKEN)
@@ -26,10 +27,15 @@ def send_welcome(message):
 def support(message):
     if message.chat.type == 'private':
         if message.text == 'Помощь':
-            bot.send_message(Info.chat_id, "lflflfl", reply_markup=markup)
+            bot.send_message(Info.chat_id, "lalalala", reply_markup=markup)
         if message.text == 'Проверка сообщений':
-            last_message.get_last_message(session, 10)
-            threading.Thread.start(last_message.messag(bot, markup))
+            last_message.get_last_message(session, 10, bot, markup)
+            f = open("mes.txt", "r")
+            messages = f.read().splitlines()
+            for i in range(0, len(messages)):
+                bot.send_message(Info.chat_id, messages[i], reply_markup=markup, disable_web_page_preview=True)
+                time.sleep(0.5)
+            # threading.Thread.start(last_message.messag(bot, markup, session))
 
 
 if __name__ == "__main__":
