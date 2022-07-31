@@ -5,7 +5,6 @@ import time
 
 def get_last_message(session, count_of_chats, bot, markup):
     zz = session.method("messages.getConversations", {"count": count_of_chats})
-    open('mes.txt', 'w').close()
     for i in range(0, count_of_chats):
         try:
             current_conversation = zz["items"][i]
@@ -20,9 +19,9 @@ def get_last_message(session, count_of_chats, bot, markup):
                     last_message_def.group_message(session, zz, i)
 
                 if any(messages):
-                    bot.send_message(Info.chat_id, text=f"__{messages[0]}:__", reply_markup=markup, disable_web_page_preview=True, parse_mode="MarkdownV2")
+                    bot.send_message(Info.chat_id, text=f"__{messages[0]}:__", reply_markup=markup, disable_web_page_preview=False, parse_mode="MarkdownV2")
                     for current_message in messages[1]:
-                        bot.send_message(Info.chat_id, current_message, reply_markup=markup, disable_web_page_preview=True)
+                        bot.send_message(Info.chat_id, current_message, reply_markup=markup, disable_web_page_preview=False)
         except KeyError:
             continue
 

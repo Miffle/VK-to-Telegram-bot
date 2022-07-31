@@ -30,11 +30,11 @@ def support(message):
             bot.send_message(Info.chat_id, "lalalala", reply_markup=markup)
         if message.text == 'Проверка сообщений':
             last_message.get_last_message(session, 10, bot, markup)
-            f = open("mes.txt", "r")
-            messages = f.read().splitlines()
-            for i in range(0, len(messages)):
-                bot.send_message(Info.chat_id, messages[i], reply_markup=markup, disable_web_page_preview=True)
-                time.sleep(0.5)
+            # f = open("mes.txt", "r")
+            # messages = f.read().splitlines()
+            # for i in range(0, len(messages)):
+            #     bot.send_message(Info.chat_id, messages[i], reply_markup=markup, disable_web_page_preview=True)
+            #     time.sleep(0.5)
             # threading.Thread.start(last_message.messag(bot, markup, session))
 
 
