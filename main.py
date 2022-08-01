@@ -5,8 +5,6 @@ import datebase_def
 import Info
 import last_message
 
-session = vk_api.VkApi(token=Info.vk_TOKEN)
-vk = session.get_api()
 bot = telebot.TeleBot(Info.TGbot_token, parse_mode=None)
 markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -20,7 +18,7 @@ markup1.add(itembtn1, itembtn3, itembtn4)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.send_message(message.chat_id,
+    bot.send_message(message.chat.id,
                      "Привет, думаю, что ты уже знаешь функционал, но,"
                      " если нет, то можешь нажать на кнопку 'Помощь' 😄\n"
                      "Начну сразу, для работы мне нужен твой API ключ, сообщения я у себя не держу и даже их не вижу\n"
@@ -41,7 +39,7 @@ def send_welcome(message):
 def support(message):
     if message.chat.type == 'private':
         if message.text == 'Подписаться':
-            send = bot.send_message(Info.chat_id, "Отправь сюда API ключ", reply_markup=markup)
+            send = bot.send_message(message.chat.id, "Отправь сюда API ключ", reply_markup=markup)
             bot.register_next_step_handler(send, get_api)
         elif message.text == 'Отписаться':
             bot.send_message(Info.chat_id, "Очень жаль, если что, то я всегда тут", reply_markup=markup)
@@ -49,15 +47,16 @@ def support(message):
 
 
         elif message.text == 'Помощь':
-            bot.send_message(Info.chat_id, "lalalala", reply_markup=markup)
+            bot.send_message(message.chat_id, "lalalala", reply_markup=markup)
         elif message.text == 'Проверка сообщений':
-            last_message.get_last_message(session, 10, bot, markup)
-            # f = open("mes.txt", "r")
-            # messages = f.read().splitlines()
-            # for i in range(0, len(messages)):
-            #     bot.send_message(Info.chat_id, messages[i], reply_markup=markup, disable_web_page_preview=True)
-            #     time.sleep(0.5)
-            # threading.Thread.start(last_message.messag(bot, markup, session))
+            sub = datebase_def.sub_check(message.chat.id)
+            if sub == True:
+                token = datebase_def.api_check(message.chat.id)
+                session = vk_api.VkApi(token=token)
+                vk = session.get_api()
+                last_message.get_last_message(session, 10, bot, markup, message.chat.id)
+            else:
+                bot.send_message(message.chat.id, "Ты не подписался и не прислал токен!")
 
 
 @bot.message_handler(content_types=['text'])

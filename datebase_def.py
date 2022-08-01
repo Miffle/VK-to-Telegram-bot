@@ -12,6 +12,7 @@ def insert_in_db(userid, vk_user_api):
     connection.commit()
     connection.close()
 
+
 def subscribe(userid, vk_user_api):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
@@ -19,6 +20,8 @@ def subscribe(userid, vk_user_api):
     cursor.execute("UPDATE `Users` SET `VK_api` = ? WHERE `user_id` = ?", (vk_user_api, userid))
     connection.commit()
     connection.close()
+
+
 def unsubscribe(userid):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
@@ -27,8 +30,15 @@ def unsubscribe(userid):
     connection.close()
 
 
-def read_from_db(tgid):
+def sub_check(tgid):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
-    cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,))
+    sub = cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,))
+    return bool(sub)
 
+
+def api_check(tgid):
+    connection = sqlite3.connect('identifier.sqlite')
+    cursor = connection.cursor()
+    api = cursor.execute("SELECT VK_api FROM Users WHERE user_id = ?", (tgid,)).fetchall()
+    return api[0]
