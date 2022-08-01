@@ -1,28 +1,43 @@
-def group_message(session, zz, i):
-    f = open("mes.txt", "a+")
+def group_message(session, current_conversation):
     """Читает последнее сообщение группы из диалогов"""
 
     """ Получает ID группы, которая написала сообщение"""
-
-    group_id = session.method("groups.getById",
-                              {"group_id": zz["items"][i]["conversation"]["peer"]["local_id"]})
+    group_local_id = current_conversation["conversation"]["peer"]["local_id"]
+    group_id = current_conversation["conversation"]["peer"]["id"]
+    group_name = session.method("groups.getById", {"group_id": group_local_id})
 
     """ 
     Делает проверку сообщения на наличие букв и, если текста нет, то отправляет тип вложения
     """
+    group_messages = (group_name[0]["name"], [])
 
-    if zz["items"][i]["last_message"]["text"] != "":
-        print((group_id[0]["name"] + ":"), file=f, flush=True)
-        group_last_mes = zz["items"][i]["conversation"]["last_conversation_message_id"]
-        group_unread_count = zz["items"][i]["conversation"]["unread_count"]
-        start = (group_last_mes - group_unread_count) + 1
-        for k in range(start, group_last_mes):
-            mes = (session.method("messages.getByConversationMessageId",
-                                  {"peer_id": group_id, "conversation_message_ids": k}))
-            print(mes["items"][0]["text"], file=f, flush=True)
-    else:
-        print((group_id[0]["name"] + " | " + zz["items"][i]["last_message"]["attachments"][0]["type"]), file=f,
-              flush=True)
+    group_last_mes = current_conversation["conversation"]["last_conversation_message_id"]
+    group_unread_count = current_conversation["conversation"]["unread_count"]
+    start = (group_last_mes - group_unread_count) + 1
+    for current_message_id in range(start, group_last_mes + 1):
+        mes = (session.method("messages.getByConversationMessageId",
+                              {"peer_id": group_id, "conversation_message_ids": current_message_id}))
+        if mes["items"][0]["text"] != "":
+            group_messages[1].append(mes["items"][0]["text"])
+        else:
+            if mes["items"][0]["attachments"][0]["type"] == "video":
+                group_messages[1].append((
+                    mes["items"][0]["attachments"][0]["video"]["files"]["mp4_360"]))
+            elif mes["items"][0]["attachments"][0]["type"] == "photo":
+                sizes = mes["items"][0]["attachments"][0]["photo"]["sizes"]
+                max_size = max(sizes, key=lambda size: size["height"])
+                group_messages[1].append(max_size["url"])
+            elif mes["items"][0]["attachments"][0]["type"] == "audio_message":
+                group_messages[1].append(
+                    (mes["items"][0]["attachments"][0]["audio_message"]["link_ogg"]))
+            elif mes["items"][0]["attachments"][0]["type"] == "audio":
+                group_messages[1].append(
+                    (mes["items"][0]["attachments"][0]["audio"]["url"]))
+            else:
+                group_messages[1].append(
+                    mes["items"][0]["attachments"][0][
+                        "type"])
+    return group_messages
 
 
 def user_message(session, current_conversation):
@@ -40,7 +55,7 @@ def user_message(session, current_conversation):
     for current_message_id in range(start, user_last_mes + 1):
         mes = (session.method("messages.getByConversationMessageId",
                               {"peer_id": user_id, "conversation_message_ids": current_message_id}))
-        if current_conversation["last_message"]["text"] != "":
+        if mes["items"][0]["text"] != "" != "":
 
             user_messages[1].append(mes["items"][0]["text"])
         else:
@@ -99,7 +114,8 @@ def chat_message(current_conversation, session):
                     (user[0]["first_name"] + ' ' + user[0]["last_name"] + ": \n") +
                     (mes["items"][0]["attachments"][0]["audio_message"]["link_ogg"]))
             elif mes["items"][0]["attachments"][0]["type"] == "audio":
-                chat_messages[1].append(((user[0]["first_name"] + ' ' + user[0]["last_name"] + ": \n") + (mes["items"][0]["attachments"][0]["audio"]["url"])))
+                chat_messages[1].append(((user[0]["first_name"] + ' ' + user[0]["last_name"] + ": \n") + (
+                    mes["items"][0]["attachments"][0]["audio"]["url"])))
             else:
                 chat_messages[1].append(
                     (user[0]["first_name"] + ' ' + user[0]["last_name"] + ": \n") + mes["items"][0]["attachments"][0][
