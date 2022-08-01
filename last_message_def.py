@@ -55,13 +55,13 @@ def user_message(session, current_conversation):
     for current_message_id in range(start, user_last_mes + 1):
         mes = (session.method("messages.getByConversationMessageId",
                               {"peer_id": user_id, "conversation_message_ids": current_message_id}))
-        if mes["items"][0]["text"] != "" != "":
+        if mes["items"][0]["text"] != "":
 
             user_messages[1].append(mes["items"][0]["text"])
         else:
             if mes["items"][0]["attachments"][0]["type"] == "video":
                 user_messages[1].append((
-                    mes["items"][0]["attachments"][0]["video"]["files"]["mp4_360"]))
+                    mes["items"][0]["attachments"][0]["video"]["files"]["mp4_240"]))
             elif mes["items"][0]["attachments"][0]["type"] == "photo":
                 sizes = mes["items"][0]["attachments"][0]["photo"]["sizes"]
                 max_size = max(sizes, key=lambda size: size["height"])

@@ -34,6 +34,7 @@ def sub_check(tgid):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
     sub = cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,))
+    connection.close()
     return bool(sub)
 
 
@@ -41,4 +42,5 @@ def api_check(tgid):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
     api = cursor.execute("SELECT VK_api FROM Users WHERE user_id = ?", (tgid,)).fetchall()
+    connection.close()
     return api[0]
