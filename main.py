@@ -3,7 +3,7 @@ import vk_api
 from telebot import types
 import datebase_def
 import Info
-import last_message
+import message_for_user
 import bot_messages
 
 bot = telebot.TeleBot(Info.TGbot_token, parse_mode=None)
@@ -60,7 +60,7 @@ def support(message):
             if sub == True:
                 token = datebase_def.api_check(message.chat.id)
                 session = vk_api.VkApi(token=token)
-                last_message.get_last_message(session, 10, bot, markup1, message.chat.id)
+                message_for_user.get_last_message(session, 15, bot, markup1, message.chat.id)
             else:
                 bot.send_message(message.chat.id, "Ты не подписался и не прислал токен!")
 
