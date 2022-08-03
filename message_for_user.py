@@ -43,6 +43,7 @@ def get_last_message(session, count_of_chats, bot, markup, message):
             continue
 
 
+
 def send_attachments(current_message: message_for_user_def.Message, bot, message, markup):
     for attachment in current_message.attachments:
         if attachment.attachment_type == 'video':
