@@ -20,6 +20,7 @@ class Message(object):
         Добавить вложения из json сообщения диалога
         """
         conversation_message_attachments = conversation_message["attachments"]
+        self.attachments = []
 
         for current_attachment in conversation_message_attachments:
             attachment_to_add = Attachment()
@@ -63,6 +64,7 @@ def group_message(session, current_conversation):
     Делает проверку сообщения на наличие букв и, если текста нет, то отправляет тип вложения
     """
     group_conv_messages = ConversationMessages()
+    group_conv_messages.messages = []
     group_conv_messages.name = group_name[0]["name"]
     group_conv_messages.link = "vk.com/club" + str(group_local_id)
 
@@ -71,7 +73,8 @@ def group_message(session, current_conversation):
     start = (group_last_mes - group_unread_count) + 1
     for current_message_id in range(start, group_last_mes + 1):
         conversation_message_response = (session.method("messages.getByConversationMessageId",
-                              {"peer_id": group_id, "conversation_message_ids": current_message_id}))
+                                                        {"peer_id": group_id,
+                                                         "conversation_message_ids": current_message_id}))
         conversation_message = conversation_message_response["items"][0]
         current_message = Message()
         current_message.sender = group_conv_messages.name
@@ -95,6 +98,7 @@ def user_message(session, current_conversation):
     user_messages = (user["first_name"] + " " + user["last_name"], [], [], ["vk.com/id" + str(user_id)])
 
     user_conv_messages = ConversationMessages()
+    user_conv_messages.messages = []
     user_conv_messages.name = user["first_name"] + " " + user["last_name"]
     user_conv_messages.link = "vk.com/id" + str(user_id)
 
@@ -103,7 +107,8 @@ def user_message(session, current_conversation):
     start = (user_last_mes - user_unread_count) + 1
     for current_message_id in range(start, user_last_mes + 1):
         conversation_message_response = (session.method("messages.getByConversationMessageId",
-                              {"peer_id": user_id, "conversation_message_ids": current_message_id}))
+                                                        {"peer_id": user_id,
+                                                         "conversation_message_ids": current_message_id}))
         conversation_message = conversation_message_response["items"][0]
         current_message = Message()
         current_message.sender = user_conv_messages.name
@@ -121,6 +126,7 @@ def chat_message(current_conversation, session):
     """Читает последнее сообщение в чате из диалогов"""
     """Делает проверку сообщения на наличие букв и, если текста нет, то отправляет тип вложения"""
     chat_conv_messages = ConversationMessages()
+    chat_conv_messages.messages = []
     chat_conv_messages.name = current_conversation["chat_settings"]["title"]
     chat_conv_messages.link = current_conversation["chat_settings"]["photo"]["photo_200"]
 
@@ -131,14 +137,15 @@ def chat_message(current_conversation, session):
 
     for current_message_id in range(start, chat_last_mes + 1):
         conversation_message_response = (session.method("messages.getByConversationMessageId",
-                              {"peer_id": chat_id, "conversation_message_ids": current_message_id}))
-        
+                                                        {"peer_id": chat_id,
+                                                         "conversation_message_ids": current_message_id}))
+
         conversation_message = conversation_message_response["items"][0]
         user = (session.method("users.get", {"user_ids": conversation_message["from_id"]}))[0]
         current_message = Message()
-        
+        current_message.sender = user["first_name"] + ' ' + user["last_name"] + ":"
+
         if conversation_message["text"] != "":
-            current_message.sender = user["first_name"] + ' ' + user["last_name"]
             current_message.text = conversation_message["text"]
         else:
             current_message.add_attachments(conversation_message)
