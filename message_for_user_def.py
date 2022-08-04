@@ -95,7 +95,6 @@ def user_message(session, current_conversation):
     """Делает проверку сообщения на наличие букв и, если текста нет, то отправляет тип вложения"""
 
     user_id = current_conversation["peer"]["id"]
-    user_messages = (user["first_name"] + " " + user["last_name"], [], [], ["vk.com/id" + str(user_id)])
 
     user_conv_messages = ConversationMessages()
     user_conv_messages.messages = []
@@ -119,7 +118,7 @@ def user_message(session, current_conversation):
             current_message.add_attachments(conversation_message)
         user_conv_messages.messages.append(current_message)
 
-    return user_messages
+    return user_conv_messages
 
 
 def chat_message(current_conversation, session):

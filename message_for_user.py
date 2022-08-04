@@ -32,7 +32,7 @@ def get_last_message(session, count_of_chats, bot, markup, message):
                     current_message_num = 0
                     while current_message_num < size:
                         current_message: message_for_user_def.Message = messages_to_send[current_message_num]
-                        bot.send_message(message, text=current_message.sender, reply_markup=markup)
+                        # bot.send_message(message, text=current_message.sender, reply_markup=markup)
                         if len(current_message.attachments) == 0:
                             if current_message.text != '':
                                 bot.send_message(message, text=current_message.text, reply_markup=markup)
