@@ -1,3 +1,5 @@
+import time
+
 import telebot.apihelper
 
 import message_for_user_def
@@ -37,6 +39,7 @@ def get_last_message(session, count_of_chats, bot, markup, message):
                         else:
                             send_attachments(current_message, bot, message, markup)
                         current_message_num += 1
+                        time.sleep(1)
         except KeyError:
             if i == count_of_chats - 1:
                 bot.send_message(message, "Больше сообщений нет...", reply_markup=markup)

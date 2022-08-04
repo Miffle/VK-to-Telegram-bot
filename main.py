@@ -71,9 +71,11 @@ def support(message):
         elif message.text == write_button.text:
             api_key = datebase_def.api_check(message.chat.id)
             session = vk_api.VkApi(token=api_key)
-            reply_def.get_chats(message, session, api_key)
-            bot.send_message(message.chat.id, text="Кому ты хочешь написать?")
+            names = reply_def.get_chats(message, session)
+            bot.register_next_step_handler(message, processing, names, session)
 
+        elif message.text == "Отмена":
+            bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
 
 
 @bot.message_handler(content_types=['text'])
@@ -84,6 +86,36 @@ def get_api(message):
             vk_user_api = message.text
             datebase_def.insert_in_db(userid, vk_user_api)
             bot.send_message(message.chat.id, "Регистрация прошла успешно!", reply_markup=markup_with_subscription)
+
+
+@bot.message_handler(content_types=['text'])
+def processing(message, names, session):
+    if message.text == names[0][0]:
+        bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][0]}*", parse_mode="MarkdownV2")
+        bot.register_next_step_handler(message, reply, names[1][0], session)
+    elif message.text == names[0][1]:
+        bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][1]}*", parse_mode="MarkdownV2")
+        bot.register_next_step_handler(message, reply, names[1][1], session)
+    elif message.text == names[0][2]:
+        bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][2]}*", parse_mode="MarkdownV2")
+        bot.register_next_step_handler(message, reply, names[1][2], session)
+    elif message.text == names[0][3]:
+        bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][3]}*", parse_mode="MarkdownV2")
+        bot.register_next_step_handler(message, reply, names[1][3], session)
+    elif message.text == names[0][4]:
+        bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][4]}*", parse_mode="MarkdownV2")
+        bot.register_next_step_handler(message, reply, names[1][4], session)
+
+
+@bot.message_handler(content_types=['text'])
+def reply(message, chat_id, session):
+    if message.text != "Отмена":
+        session.method("messages.send", {"peer_id": chat_id, "message": message.text, "random_id": 0})
+        bot.send_message(message.chat.id, "Сообщение успешно отправлено!",
+                         reply_markup=markup_with_subscription)
+
+    else:
+        bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
 
 
 if __name__ == "__main__":
