@@ -140,15 +140,16 @@ def reply(message, chat_id, session):
 def chat_reading(message, names, session):
     if message.text != "Отмена":
         if message.text == names[0][0]:
-            reply_read_def.read_chat(message, session, names[1][0])
+            reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription)
         elif message.text == names[0][1]:
-            reply_read_def.read_chat(message, session, names[1][1])
+            reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription)
         elif message.text == names[0][2]:
-            reply_read_def.read_chat(message, session, names[1][2])
+            reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription)
         elif message.text == names[0][3]:
-            reply_read_def.read_chat(message, session, names[1][3])
+            reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription)
         elif message.text == names[0][4]:
-            reply_read_def.read_chat(message, session, names[1][4])
+            reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription)
+
 
 
 if __name__ == "__main__":

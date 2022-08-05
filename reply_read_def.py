@@ -1,5 +1,5 @@
 from telebot import types
-
+import telebot.apihelper
 from main import bot
 
 
@@ -43,33 +43,60 @@ def get_chats(message, session):
     return names
 
 
-def read_chat(message, session, names):
-    mes = session.method("messages.getHistory", {"peer_id": names})
+def read_chat(message, session, names, markup_with_subscription):
+    mes = session.method("messages.getHistory", {"peer_id": names, "count": 10})
+    dialog = session.method("messages.getConversationsById", {"peer_ids": names})
+    dialog_type = dialog["items"][0]["peer"]["type"]
+    group_local_id = dialog["items"][0]["peer"]["local_id"]
     for i in reversed(range(0, len(mes["items"]))):
         current_message = mes["items"][i]
+        if dialog_type == "group":
+            message_sender = session.method("groups.getById", {"group_id": group_local_id})
+            message_sender_name = message_sender[0]["name"]
+        else:
+            message_sender = session.method("users.get", {"user_ids": current_message["from_id"]})
+            message_sender_name = message_sender[0]["first_name"] + " " + message_sender[0]["last_name"]
         current_attachment = mes["items"][i]["attachments"]
         current_attachment_count = len(current_attachment)
         if mes['items'][i]['text'] != '':
-            bot.send_message(message.chat.id, text=current_message["text"])
+            bot.send_message(message.chat.id, text=(f'<b>{message_sender_name}:</b> \n' + current_message["text"]),
+                             parse_mode='HTML', reply_markup=markup_with_subscription)
         else:
             for attachment in range(0, current_attachment_count):
                 if current_attachment[attachment]["type"] == "audio":
                     bot.send_audio(message.chat.id, audio=current_attachment[attachment]["audio"]["url"],
-                                   caption=(current_attachment[attachment]["audio"]["artist"] + " - " +
+                                   caption=(f"<b>{message_sender_name}:</b> " + current_attachment[attachment]["audio"][
+                                       "artist"] + " - " +
                                             current_attachment[attachment]["audio"]["title"]),
-                                   disable_notification=True)
+                                   disable_notification=True, parse_mode="HTML")
                 elif current_attachment[attachment]["type"] == "photo":
                     sizes = current_attachment[attachment]["photo"]["sizes"]
                     max_size = max(sizes, key=lambda size: size["height"])
-                    bot.send_photo(message.chat.id, photo=max_size['url'],
-                                   disable_notification=True)
+                    bot.send_photo(message.chat.id, photo=max_size['url'], caption=f"<b>{message_sender_name}</b>",
+                                   disable_notification=True, parse_mode="HTML")
                 elif current_attachment[attachment]["type"] == "video":
-                    bot.send_message(message.chat.id, text=current_attachment[attachment]["video"]["player"],
+                    bot.send_message(message.chat.id, text=(
+                            f"<b>{message_sender_name}: </b>" + current_attachment[attachment]["video"]["player"]),
+                                     parse_mode="HTML",
                                      disable_notification=True)
                 elif current_attachment[attachment]["type"] == "audio_message":
                     bot.send_voice(message.chat.id, voice=current_attachment[attachment]["audio_message"]["link_ogg"],
+                                   caption=f"<b>{message_sender_name}</b>", parse_mode="HTML",
                                    disable_notification=True)
                 elif current_attachment[attachment]["type"] == "doc":
-                    bot.send_document(message.chat.id, document=current_attachment[attachment]["doc"]["url"],
-                                      disable_notification=True)
-    session.method("messages.markAsRead", {"peer_id": names})
+                    doc_url = current_attachment[attachment]["doc"]["url"]
+                    try:
+                        bot.send_document(message.chat.id, document=current_attachment[attachment]["doc"]["url"],
+                                          caption=f"<b>{message_sender_name}</b>", parse_mode="HTML",
+                                          disable_notification=True)
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.send_message(message.chat.id, text=f"[Документ]({doc_url})",
+                                         parse_mode="MarkdownV2", disable_notification=True)
+                elif current_attachment[attachment]["type"] == "sticker":
+                    bot.send_photo(message.chat.id, photo=current_attachment[attachment]["sticker"]["images"][2]["url"],
+                                   caption=f"<b>{message_sender_name}</b>", parse_mode="HTML",
+                                   disable_notification=True)
+                else:
+                    bot.send_message(message.chat.id,
+                                     text=(f"<b>{message_sender_name}:</b> " + current_attachment[attachment]["type"]))
+        session.method("messages.markAsRead", {"peer_id": names})
