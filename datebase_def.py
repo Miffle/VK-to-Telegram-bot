@@ -33,7 +33,7 @@ def unsubscribe(userid):
 def sub_check(tgid):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
-    sub = cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,))
+    sub = cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,)).fetchall()
     connection.close()
     return bool(sub)
 
