@@ -1,4 +1,7 @@
 import sqlite3
+import threading
+
+import auto_check_new_message
 
 
 def insert_in_db(userid, vk_user_api):
@@ -44,3 +47,17 @@ def api_check(tgid):
     api = cursor.execute("SELECT VK_api FROM Users WHERE user_id = ?", (tgid,)).fetchall()
     connection.close()
     return api[0]
+
+
+def renew_polling_threads(bot):
+    connection = sqlite3.connect('identifier.sqlite')
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    users = cursor.execute("SELECT * FROM Users").fetchall()
+    for user_row in users:
+        api_key = user_row["VK_api"]
+        user_id = user_row["user_id"]
+        if user_row["subscrition"]:
+            threading.Thread(target=auto_check_new_message.new_message, args=(api_key, user_id, bot)).start()
+    connection.close()
+

@@ -1,10 +1,10 @@
 from telebot import types
 import telebot.apihelper
-from main import bot
 
 
-def get_chats(message, session):
-    names = ([], [])
+
+def get_all_chats(message, session, bot):
+    names = ([], [], [])
     '''
     У names 
     1 - Название
@@ -18,21 +18,33 @@ def get_chats(message, session):
         if conversation_type == "chat":
             names[0].append(current_conversation["chat_settings"]["title"])
             names[1].append(current_conversation["peer"]["id"])
+            if current_conversation['in_read_cmid'] != current_conversation['out_read_cmid']:
+                names[2].append(current_conversation['unread_count'])
+            else:
+                names[2].append("0")
         elif conversation_type == "user":
             user = session.method("users.get", {"user_ids": current_conversation["peer"]["id"]})[0]
             names[0].append(user["first_name"] + " " + user["last_name"])
             names[1].append(user["id"])
+            if current_conversation['in_read_cmid'] != current_conversation['out_read_cmid']:
+                names[2].append(current_conversation['unread_count'])
+            else:
+                names[2].append("0")
         elif conversation_type == "group":
             group_local_id = current_conversation["peer"]["local_id"]
             group_id = current_conversation["peer"]["id"]
             group_name = session.method("groups.getById", {"group_id": group_local_id})
             names[0].append(group_name[0]["name"])
             names[1].append(group_id)
-    first_chat_button = types.KeyboardButton(text=names[0][0])
-    second_chat_button = types.KeyboardButton(text=names[0][1])
-    third_chat_button = types.KeyboardButton(text=names[0][2])
-    fourth_chat_button = types.KeyboardButton(text=names[0][3])
-    fifth_chat_button = types.KeyboardButton(text=names[0][4])
+            if current_conversation['in_read_cmid'] != current_conversation['out_read_cmid']:
+                names[2].append(current_conversation['unread_count'])
+            else:
+                names[2].append("0")
+    first_chat_button = types.KeyboardButton(text=(names[0][0]+f"({names[2][0]})"))
+    second_chat_button = types.KeyboardButton(text=(names[0][1]+f"({names[2][1]})"))
+    third_chat_button = types.KeyboardButton(text=(names[0][2]+f"({names[2][2]})"))
+    fourth_chat_button = types.KeyboardButton(text=(names[0][3]+f"({names[2][3]})"))
+    fifth_chat_button = types.KeyboardButton(text=(names[0][4]+f"({names[2][4]})"))
     sixth_chat_button = types.KeyboardButton(text="Отмена")
     chats_markup.add(first_chat_button, second_chat_button, third_chat_button, fourth_chat_button, fifth_chat_button,
                      sixth_chat_button)
@@ -43,8 +55,8 @@ def get_chats(message, session):
     return names
 
 
-def read_chat(message, session, names, markup_with_subscription):
-    mes = session.method("messages.getHistory", {"peer_id": names, "count": 10})
+def read_chat(message, session, names, markup_with_subscription, bot):
+    mes = session.method("messages.getHistory", {"peer_id": names, "count": 15})
     dialog = session.method("messages.getConversationsById", {"peer_ids": names})
     dialog_type = dialog["items"][0]["peer"]["type"]
     group_local_id = dialog["items"][0]["peer"]["local_id"]
@@ -60,7 +72,7 @@ def read_chat(message, session, names, markup_with_subscription):
         current_attachment_count = len(current_attachment)
         if mes['items'][i]['text'] != '':
             bot.send_message(message.chat.id, text=(f'<b>{message_sender_name}:</b> \n' + current_message["text"]),
-                             parse_mode='HTML', reply_markup=markup_with_subscription)
+                             parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True)
         else:
             for attachment in range(0, current_attachment_count):
                 if current_attachment[attachment]["type"] == "audio":
@@ -98,5 +110,6 @@ def read_chat(message, session, names, markup_with_subscription):
                                    disable_notification=True)
                 else:
                     bot.send_message(message.chat.id,
-                                     text=(f"<b>{message_sender_name}:</b> " + current_attachment[attachment]["type"]))
+                                     text=(f"<b>{message_sender_name}:</b> " + current_attachment[attachment]["type"]),
+                                     parse_mode="HTML")
         session.method("messages.markAsRead", {"peer_id": names})

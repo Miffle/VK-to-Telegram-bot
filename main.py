@@ -1,16 +1,20 @@
+import threading
+
 import telebot
 import vk_api
 from telebot import types
+import reply_read_def
+import auto_check_new_message
 import datebase_def
 import Info
 import message_for_user
 import bot_messages
-import reply_read_def
+
 
 bot = telebot.TeleBot(Info.TGbot_token, parse_mode=None)
 markup_with_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
 markup_without_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
+datebase_def.renew_polling_threads(bot)
 check_messages_button = types.KeyboardButton('Проверка сообщений')
 subscribe_button = types.KeyboardButton('Подписаться')
 write_button = types.KeyboardButton('Написать сообщение')
@@ -71,12 +75,12 @@ def support(message):
         elif message.text == write_button.text:
             api_key = datebase_def.api_check(message.chat.id)
             session = vk_api.VkApi(token=api_key)
-            names = reply_read_def.get_chats(message, session)
+            names = reply_read_def.get_all_chats(message, session, bot)
             bot.register_next_step_handler(message, processing, names, session)
         elif message.text == read_button.text:
             api_key = datebase_def.api_check(message.chat.id)
             session = vk_api.VkApi(token=api_key)
-            names = reply_read_def.get_chats(message, session)
+            names = reply_read_def.get_all_chats(message, session, bot)
             bot.register_next_step_handler(message, chat_reading, names, session)
         elif message.text == "Отмена":
             bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
@@ -91,6 +95,7 @@ def get_api(message):
                 vk_user_api = message.text
                 datebase_def.insert_in_db(userid, vk_user_api)
                 bot.send_message(message.chat.id, "Регистрация прошла успешно!", reply_markup=markup_with_subscription)
+                threading.Thread.start(auto_check_new_message.new_message(vk_user_api, userid, bot))
             else:
                 bot.send_message(message.chat.id, "Мимо, давай ещё разок(Нажав на кнопку 'Подписаться')",
                                  reply_markup=markup_without_subscription)
@@ -102,19 +107,19 @@ def get_api(message):
 @bot.message_handler(content_types=['text'])
 def processing(message, names, session):
     if message.text != "Отмена":
-        if message.text == names[0][0]:
+        if message.text == (names[0][0]+f"({names[2][0]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][0]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][0], session)
-        elif message.text == names[0][1]:
+        elif message.text == (names[0][1]+f"({names[2][1]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][1]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][1], session)
-        elif message.text == names[0][2]:
+        elif message.text == (names[0][2]+f"({names[2][2]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][2]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][2], session)
-        elif message.text == names[0][3]:
+        elif message.text == (names[0][3]+f"({names[2][3]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][3]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][3], session)
-        elif message.text == names[0][4]:
+        elif message.text == (names[0][4]+f"({names[2][4]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][4]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][4], session)
     else:
@@ -139,18 +144,18 @@ def reply(message, chat_id, session):
 @bot.message_handler(content_types=['text'])
 def chat_reading(message, names, session):
     if message.text != "Отмена":
-        if message.text == names[0][0]:
-            reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription)
-        elif message.text == names[0][1]:
-            reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription)
-        elif message.text == names[0][2]:
-            reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription)
-        elif message.text == names[0][3]:
-            reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription)
-        elif message.text == names[0][4]:
-            reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription)
+        if message.text == (names[0][0]+f"({names[2][0]})"):
+            reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription, bot)
+        elif message.text == (names[0][1]+f"({names[2][1]})"):
+            reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription, bot)
+        elif message.text == (names[0][2]+f"({names[2][2]})"):
+            reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription, bot)
+        elif message.text == (names[0][3]+f"({names[2][3]})"):
+            reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription, bot)
+        elif message.text == (names[0][4]+f"({names[2][4]})"):
+            reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription, bot)
+    else:
+        bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
 
 
-
-if __name__ == "__main__":
-    bot.infinity_polling()
+bot.infinity_polling()

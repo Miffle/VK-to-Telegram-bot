@@ -123,7 +123,7 @@ def user_message(session, current_conversation):
 
 def chat_message(current_conversation, session):
     """Читает последнее сообщение в чате из диалогов"""
-    """Делает проверку сообщения на наличие букв и, если текста нет, то отправляет тип вложения"""
+    """Делает проверку сообщения на наличие букв и, если текста нет, отправляет тип вложения"""
     chat_conv_messages = ConversationMessages()
     chat_conv_messages.messages = []
     chat_conv_messages.name = current_conversation["chat_settings"]["title"]
