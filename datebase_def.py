@@ -38,7 +38,7 @@ def sub_check(tgid):
     cursor = connection.cursor()
     sub = cursor.execute("SELECT subscrition FROM Users WHERE user_id = ?", (tgid,)).fetchall()
     connection.close()
-    return bool(sub)
+    return bool(sub[0][0])
 
 
 def api_check(tgid):
@@ -60,4 +60,3 @@ def renew_polling_threads(bot):
         if user_row["subscrition"]:
             threading.Thread(target=auto_check_new_message.new_message, args=(api_key, user_id, bot)).start()
     connection.close()
-

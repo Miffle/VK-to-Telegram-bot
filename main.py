@@ -10,7 +10,6 @@ import Info
 import message_for_user
 import bot_messages
 
-
 bot = telebot.TeleBot(Info.TGbot_token, parse_mode=None)
 markup_with_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
 markup_without_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -45,7 +44,10 @@ def send_welcome(message):
 def support(message):
     if message.chat.type == 'private':
         if message.text == subscribe_button.text:
-            send = bot.send_message(message.chat.id, "Отправь сюда API ключ", reply_markup=markup_without_subscription)
+            send = bot.send_message(message.chat.id,
+                                    "Отправь сюда <ins>ссылку</ins> со страницы, на которой написано:\n"
+                                    "'Пожалуйста, не копируйте данные из адресной строки...'\nДа-да)",
+                                    reply_markup=markup_without_subscription, parse_mode="HTML")
             bot.register_next_step_handler(send, get_api)
         elif message.text == unsubscribe_button.text:
             bot.send_message(message.chat.id, "Очень жаль, если что, то я всегда тут",
@@ -89,10 +91,11 @@ def support(message):
 @bot.message_handler(content_types=['text'])
 def get_api(message):
     if message.chat.type == 'private':
-        if "=" and "&" not in message.text:
+        if ("=" and "&") in message.text:
             if "vk1.a." in message.text:
                 userid = message.chat.id
-                vk_user_api = message.text
+                vk_user_api_url = message.text
+                vk_user_api = vk_user_api_url[vk_user_api_url.find("=") + 1: vk_user_api_url.find("&")]
                 datebase_def.insert_in_db(userid, vk_user_api)
                 bot.send_message(message.chat.id, "Регистрация прошла успешно!", reply_markup=markup_with_subscription)
                 threading.Thread.start(auto_check_new_message.new_message(vk_user_api, userid, bot))
@@ -107,34 +110,34 @@ def get_api(message):
 @bot.message_handler(content_types=['text'])
 def processing(message, names, session):
     if message.text != "Отмена":
-        if message.text == (names[0][0]+f"({names[2][0]})"):
+        if message.text == (names[0][0] + f"({names[2][0]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][0]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][0], session)
-        elif message.text == (names[0][1]+f"({names[2][1]})"):
+        elif message.text == (names[0][1] + f"({names[2][1]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][1]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][1], session)
-        elif message.text == (names[0][2]+f"({names[2][2]})"):
+        elif message.text == (names[0][2] + f"({names[2][2]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][2]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][2], session)
-        elif message.text == (names[0][3]+f"({names[2][3]})"):
+        elif message.text == (names[0][3] + f"({names[2][3]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][3]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][3], session)
-        elif message.text == (names[0][4]+f"({names[2][4]})"):
+        elif message.text == (names[0][4] + f"({names[2][4]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][4]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][4], session)
-        elif message.text == (names[0][5]+f"({names[2][5]})"):
+        elif message.text == (names[0][5] + f"({names[2][5]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][5]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][5], session)
-        elif message.text == (names[0][6]+f"({names[2][6]})"):
+        elif message.text == (names[0][6] + f"({names[2][6]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][6]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][6], session)
-        elif message.text == (names[0][7]+f"({names[2][7]})"):
+        elif message.text == (names[0][7] + f"({names[2][7]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][7]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][7], session)
-        elif message.text == (names[0][8]+f"({names[2][8]})"):
+        elif message.text == (names[0][8] + f"({names[2][8]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][8]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][8], session)
-        elif message.text == (names[0][9]+f"({names[2][9]})"):
+        elif message.text == (names[0][9] + f"({names[2][9]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][9]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][9], session)
     else:
@@ -159,25 +162,25 @@ def reply(message, chat_id, session):
 @bot.message_handler(content_types=['text'])
 def chat_reading(message, names, session):
     if message.text != "Отмена":
-        if message.text == (names[0][0]+f"({names[2][0]})"):
+        if message.text == (names[0][0] + f"({names[2][0]})"):
             reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription, bot)
-        elif message.text == (names[0][1]+f"({names[2][1]})"):
+        elif message.text == (names[0][1] + f"({names[2][1]})"):
             reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription, bot)
-        elif message.text == (names[0][2]+f"({names[2][2]})"):
+        elif message.text == (names[0][2] + f"({names[2][2]})"):
             reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription, bot)
-        elif message.text == (names[0][3]+f"({names[2][3]})"):
+        elif message.text == (names[0][3] + f"({names[2][3]})"):
             reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription, bot)
-        elif message.text == (names[0][4]+f"({names[2][4]})"):
+        elif message.text == (names[0][4] + f"({names[2][4]})"):
             reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription, bot)
-        elif message.text == (names[0][5]+f"({names[2][5]})"):
+        elif message.text == (names[0][5] + f"({names[2][5]})"):
             reply_read_def.read_chat(message, session, names[1][5], markup_with_subscription, bot)
-        elif message.text == (names[0][6]+f"({names[2][6]})"):
+        elif message.text == (names[0][6] + f"({names[2][6]})"):
             reply_read_def.read_chat(message, session, names[1][6], markup_with_subscription, bot)
-        elif message.text == (names[0][7]+f"({names[2][7]})"):
+        elif message.text == (names[0][7] + f"({names[2][7]})"):
             reply_read_def.read_chat(message, session, names[1][7], markup_with_subscription, bot)
-        elif message.text == (names[0][8]+f"({names[2][8]})"):
+        elif message.text == (names[0][8] + f"({names[2][8]})"):
             reply_read_def.read_chat(message, session, names[1][8], markup_with_subscription, bot)
-        elif message.text == (names[0][9]+f"({names[2][9]})"):
+        elif message.text == (names[0][9] + f"({names[2][9]})"):
             reply_read_def.read_chat(message, session, names[1][9], markup_with_subscription, bot)
     else:
         bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
