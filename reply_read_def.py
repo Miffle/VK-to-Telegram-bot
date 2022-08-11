@@ -8,6 +8,7 @@ def get_all_chats(message, session, bot):
     У names 
     1 - Название
     2 - id
+    3 - Кол-во непрочитанных
     '''
     chats_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     conversation_response = session.method("messages.getConversations", {"count": 10})
@@ -80,9 +81,26 @@ def read_chat(message, session, names, markup_with_subscription, bot):
             message_sender_name = message_sender[0]["first_name"] + " " + message_sender[0]["last_name"]
         current_attachment = mes["items"][i]["attachments"]
         current_attachment_count = len(current_attachment)
-        if current_attachment_count == 0:
+        if current_attachment_count == 0 and 'reply_message' not in mes["items"][i] and len(current_message["fwd_messages"]) == 0:
             bot.send_message(message.chat.id, text=(f'<b>{message_sender_name}:</b> \n' + current_message["text"]),
                              parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True)
+        elif 'reply_message' in mes["items"][i]:
+            replied_message_sender_id = session.method("users.get", {"user_ids": current_message['reply_message']['from_id']})
+            replied_message_sender_name = replied_message_sender_id[0]["first_name"] + " " + replied_message_sender_id[0]["last_name"]
+            replied_message_text = current_message['reply_message']['text']
+            bot.send_message(message.chat.id, text=(f"<b>{message_sender_name}:</b>  {current_message['text']}\n"
+                                                    f"\t↩️️{replied_message_sender_name}: {replied_message_text}"),
+                             parse_mode="HTML")
+        elif len(current_message['fwd_messages']) != 0:
+            for fwd_messages in range(0, len(current_message['fwd_messages'])):
+                forward_message_sender_id = session.method("users.get",
+                                                           {"user_ids": current_message['fwd_messages'][fwd_messages]['from_id']})
+                forward_message_sender_name = forward_message_sender_id[0]["first_name"] + " " + \
+                                              forward_message_sender_id[0]["last_name"]
+                fwd_messages_text = current_message['fwd_messages'][fwd_messages]['text']
+                bot.send_message(message.chat.id, text=(f"<b>{message_sender_name}:</b>  {current_message['text']}\n"
+                                                        f"\t📩 {forward_message_sender_name}: {fwd_messages_text}"),
+                                 parse_mode="HTML")
         else:
             for attachment in range(0, current_attachment_count):
                 if current_attachment[attachment]["type"] == "audio":
