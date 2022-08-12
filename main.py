@@ -125,21 +125,6 @@ def processing(message, names, session):
         elif message.text == (names[0][4] + f"({names[2][4]})"):
             bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][4]}*", parse_mode="MarkdownV2")
             bot.register_next_step_handler(message, reply, names[1][4], session)
-        elif message.text == (names[0][5] + f"({names[2][5]})"):
-            bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][5]}*", parse_mode="MarkdownV2")
-            bot.register_next_step_handler(message, reply, names[1][5], session)
-        elif message.text == (names[0][6] + f"({names[2][6]})"):
-            bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][6]}*", parse_mode="MarkdownV2")
-            bot.register_next_step_handler(message, reply, names[1][6], session)
-        elif message.text == (names[0][7] + f"({names[2][7]})"):
-            bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][7]}*", parse_mode="MarkdownV2")
-            bot.register_next_step_handler(message, reply, names[1][7], session)
-        elif message.text == (names[0][8] + f"({names[2][8]})"):
-            bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][8]}*", parse_mode="MarkdownV2")
-            bot.register_next_step_handler(message, reply, names[1][8], session)
-        elif message.text == (names[0][9] + f"({names[2][9]})"):
-            bot.send_message(message.chat.id, f"Пиши сообщение для *{names[0][9]}*", parse_mode="MarkdownV2")
-            bot.register_next_step_handler(message, reply, names[1][9], session)
     else:
         bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
 
@@ -163,25 +148,15 @@ def reply(message, chat_id, session):
 def chat_reading(message, names, session):
     if message.text != "Отмена":
         if message.text == (names[0][0] + f"({names[2][0]})"):
-            reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription, bot)
+            reply_read_def.read_chat(message, session, names[1][0], markup_with_subscription, bot, names[2][0])
         elif message.text == (names[0][1] + f"({names[2][1]})"):
-            reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription, bot)
+            reply_read_def.read_chat(message, session, names[1][1], markup_with_subscription, bot, names[2][1])
         elif message.text == (names[0][2] + f"({names[2][2]})"):
-            reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription, bot)
+            reply_read_def.read_chat(message, session, names[1][2], markup_with_subscription, bot, names[2][2])
         elif message.text == (names[0][3] + f"({names[2][3]})"):
-            reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription, bot)
+            reply_read_def.read_chat(message, session, names[1][3], markup_with_subscription, bot, names[2][3])
         elif message.text == (names[0][4] + f"({names[2][4]})"):
-            reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription, bot)
-        elif message.text == (names[0][5] + f"({names[2][5]})"):
-            reply_read_def.read_chat(message, session, names[1][5], markup_with_subscription, bot)
-        elif message.text == (names[0][6] + f"({names[2][6]})"):
-            reply_read_def.read_chat(message, session, names[1][6], markup_with_subscription, bot)
-        elif message.text == (names[0][7] + f"({names[2][7]})"):
-            reply_read_def.read_chat(message, session, names[1][7], markup_with_subscription, bot)
-        elif message.text == (names[0][8] + f"({names[2][8]})"):
-            reply_read_def.read_chat(message, session, names[1][8], markup_with_subscription, bot)
-        elif message.text == (names[0][9] + f"({names[2][9]})"):
-            reply_read_def.read_chat(message, session, names[1][9], markup_with_subscription, bot)
+            reply_read_def.read_chat(message, session, names[1][4], markup_with_subscription, bot, names[2][4])
     else:
         bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
 

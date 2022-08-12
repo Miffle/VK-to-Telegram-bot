@@ -1,6 +1,8 @@
 from telebot import types
 import telebot.apihelper
 
+import forward_message_def
+
 
 def get_all_chats(message, session, bot):
     names = ([], [], [])
@@ -10,10 +12,11 @@ def get_all_chats(message, session, bot):
     2 - id
     3 - Кол-во непрочитанных
     '''
+    count_of_chats = 5
     chats_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    conversation_response = session.method("messages.getConversations", {"count": 10})
+    conversation_response = session.method("messages.getConversations", {"count": count_of_chats})
 
-    for current_chat in range(0, 10):
+    for current_chat in range(0, count_of_chats):
         try:
             current_conversation = conversation_response["items"][current_chat]["conversation"]
             conversation_type = current_conversation["peer"]["type"]
@@ -50,14 +53,8 @@ def get_all_chats(message, session, bot):
     third_chat_button = types.KeyboardButton(text=(names[0][2] + f"({names[2][2]})"))
     fourth_chat_button = types.KeyboardButton(text=(names[0][3] + f"({names[2][3]})"))
     fifth_chat_button = types.KeyboardButton(text=(names[0][4] + f"({names[2][4]})"))
-    sixth_chat_button = types.KeyboardButton(text=(names[0][5] + f"({names[2][5]})"))
-    seventh_chat_button = types.KeyboardButton(text=(names[0][6] + f"({names[2][6]})"))
-    eighth_chat_button = types.KeyboardButton(text=(names[0][7] + f"({names[2][7]})"))
-    ninth_chat_button = types.KeyboardButton(text=(names[0][8] + f"({names[2][8]})"))
-    tenth_chat_button = types.KeyboardButton(text=(names[0][9] + f"({names[2][9]})"))
     eleventh_chat_button = types.KeyboardButton(text="Отмена")
     chats_markup.add(first_chat_button, second_chat_button, third_chat_button, fourth_chat_button, fifth_chat_button,
-                     sixth_chat_button, seventh_chat_button, eighth_chat_button, ninth_chat_button, tenth_chat_button,
                      eleventh_chat_button)
     if message.text == 'Написать сообщение':
         bot.send_message(message.chat.id, text="Кому ты хочешь написать?", reply_markup=chats_markup)
@@ -66,8 +63,8 @@ def get_all_chats(message, session, bot):
     return names
 
 
-def read_chat(message, session, names, markup_with_subscription, bot):
-    mes = session.method("messages.getHistory", {"peer_id": names, "count": 15})
+def read_chat(message, session, names, markup_with_subscription, bot, unread_count):
+    mes = session.method("messages.getHistory", {"peer_id": names, "count": 5})
     dialog = session.method("messages.getConversationsById", {"peer_ids": names})
     dialog_type = dialog["items"][0]["peer"]["type"]
     group_local_id = dialog["items"][0]["peer"]["local_id"]
@@ -81,26 +78,22 @@ def read_chat(message, session, names, markup_with_subscription, bot):
             message_sender_name = message_sender[0]["first_name"] + " " + message_sender[0]["last_name"]
         current_attachment = mes["items"][i]["attachments"]
         current_attachment_count = len(current_attachment)
-        if current_attachment_count == 0 and 'reply_message' not in mes["items"][i] and len(current_message["fwd_messages"]) == 0:
+        if current_attachment_count == 0 and 'reply_message' not in mes["items"][i] and len(
+                current_message["fwd_messages"]) == 0:
             bot.send_message(message.chat.id, text=(f'<b>{message_sender_name}:</b> \n' + current_message["text"]),
                              parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True)
         elif 'reply_message' in mes["items"][i]:
-            replied_message_sender_id = session.method("users.get", {"user_ids": current_message['reply_message']['from_id']})
-            replied_message_sender_name = replied_message_sender_id[0]["first_name"] + " " + replied_message_sender_id[0]["last_name"]
+            replied_message_sender_id = session.method("users.get",
+                                                       {"user_ids": current_message['reply_message']['from_id']})
+            replied_message_sender_name = (
+                        replied_message_sender_id[0]["first_name"] + " " + replied_message_sender_id[0]["last_name"])
             replied_message_text = current_message['reply_message']['text']
             bot.send_message(message.chat.id, text=(f"<b>{message_sender_name}:</b>  {current_message['text']}\n"
                                                     f"\t↩️️{replied_message_sender_name}: {replied_message_text}"),
                              parse_mode="HTML")
         elif len(current_message['fwd_messages']) != 0:
-            for fwd_messages in range(0, len(current_message['fwd_messages'])):
-                forward_message_sender_id = session.method("users.get",
-                                                           {"user_ids": current_message['fwd_messages'][fwd_messages]['from_id']})
-                forward_message_sender_name = forward_message_sender_id[0]["first_name"] + " " + \
-                                              forward_message_sender_id[0]["last_name"]
-                fwd_messages_text = current_message['fwd_messages'][fwd_messages]['text']
-                bot.send_message(message.chat.id, text=(f"<b>{message_sender_name}:</b>  {current_message['text']}\n"
-                                                        f"\t📩 {forward_message_sender_name}: {fwd_messages_text}"),
-                                 parse_mode="HTML")
+            forward_message_def.get_forward_message(current_message, session, bot, message.chat.id, message_sender_name)
+
         else:
             for attachment in range(0, current_attachment_count):
                 if current_attachment[attachment]["type"] == "audio":
@@ -147,7 +140,8 @@ def read_chat(message, session, names, markup_with_subscription, bot):
                                    disable_notification=True)
                 elif current_attachment[attachment]["type"] == "gift":
                     bot.send_photo(message.chat.id, photo=current_attachment[attachment]["gift"]["thumb_256"],
-                                   caption=f"<b>{message_sender_name}:</b> "+current_message['text'], parse_mode="HTML",
+                                   caption=f"<b>{message_sender_name}:</b> " + current_message['text'],
+                                   parse_mode="HTML",
                                    disable_notification=True)
                 elif current_attachment[attachment]["type"] == "link":
                     bot.send_message(message.chat.id,
@@ -168,4 +162,5 @@ def read_chat(message, session, names, markup_with_subscription, bot):
                     bot.send_message(message.chat.id,
                                      text=(f"<b>{message_sender_name}:</b> " + current_attachment[attachment]["type"]),
                                      parse_mode="HTML")
+    bot.send_message(message.chat.id, "Больше сообщений нет", reply_markup=markup_with_subscription)
     session.method("messages.markAsRead", {"peer_id": names})
