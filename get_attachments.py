@@ -37,8 +37,8 @@ def get_attachments(vk_message, attachments_count, current_fwd_message):
             attachments[0].append(current_attachment['link']['url'])
             attachments[2].append(0)
         elif attachment_type == "wall":
-            link_to_post = "vk.com/wall" + current_attachment['wall']['from_id'] + "_" + current_attachment['wall'][
-                'id']
+            link_to_post = (
+                        f"vk.com/wall{current_attachment['wall']['from_id']}_{current_attachment['wall']['id']}")
             attachments[0].append(link_to_post)
             attachments[2].append(0)
         else:

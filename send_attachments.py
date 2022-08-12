@@ -34,7 +34,7 @@ def send_attachments(bot, all_attachments, chat_id, i):
         bot.send_message(chat_id, text=f"<a href={all_attachments[0][i]}>Ссылка</a>", parse_mode="HTML",
                          disable_notification=True)
     elif all_attachments[1][i] == 'wall':
-        bot.send_message(chat_id, text=f"<a href={all_attachments[0][i]}>Пост</a>", parse_mode="HTML",
+        bot.send_message(chat_id, text=f"[Пост]({all_attachments[0][i]})", parse_mode="MarkdownV2",
                          disable_notification=True)
     else:
         bot.send_message(chat_id, text=all_attachments[1][i], parse_mode="HTML",
