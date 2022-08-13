@@ -1,8 +1,19 @@
-def get_attachments(vk_message, attachments_count, current_fwd_message):
+def get_attachments(vk_message, attachments_count, current_fwd_message=None):
+    """
+    Function for getting all attachments from a current message or list of messages
+    :param vk_message: current message with attachments
+    :param attachments_count: Number of attachments in messages
+    :param current_fwd_message: The number of the forwarded message(Optional) default value is None
+    :return: all attachments in current_message: 1 - url, 2 - type of attachments, 3 - transcript of audio message or title of video/audio/post/document or 0
+    """
     attachments = ([], [], [])
     for attachment in range(0, attachments_count):
-        attachment_type = vk_message[current_fwd_message]['attachments'][attachment]["type"]
-        current_attachment = vk_message[current_fwd_message]['attachments'][attachment]
+        if current_fwd_message is not None:
+            attachment_type = vk_message[current_fwd_message]['attachments'][attachment]["type"]
+            current_attachment = vk_message[current_fwd_message]['attachments'][attachment]
+        else:
+            attachment_type = vk_message['attachments'][attachment]["type"]
+            current_attachment = vk_message['attachments'][attachment]
         attachments[1].append(attachment_type)
         if attachment_type == "audio":
             attachments[0].append(current_attachment['audio']['url'])
@@ -38,7 +49,7 @@ def get_attachments(vk_message, attachments_count, current_fwd_message):
             attachments[2].append(0)
         elif attachment_type == "wall":
             link_to_post = (
-                        f"vk.com/wall{current_attachment['wall']['from_id']}_{current_attachment['wall']['id']}")
+                f"vk.com/wall{current_attachment['wall']['from_id']}_{current_attachment['wall']['id']}")
             attachments[0].append(link_to_post)
             attachments[2].append(0)
         else:

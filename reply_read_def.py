@@ -1,5 +1,4 @@
 from telebot import types
-import telebot.apihelper
 
 import forward_message_def
 import get_attachments
@@ -66,7 +65,11 @@ def get_all_chats(message, session, bot):
 
 
 def read_chat(message, session, names, markup_with_subscription, bot, unread_count):
-    mes = session.method("messages.getHistory", {"peer_id": names, "count": 5})
+    if unread_count == '0':
+        count_of_messages = 5
+    else:
+        count_of_messages = unread_count
+    mes = session.method("messages.getHistory", {"peer_id": names, "count": count_of_messages})
     dialog = session.method("messages.getConversationsById", {"peer_ids": names})
     dialog_type = dialog["items"][0]["peer"]["type"]
     group_local_id = dialog["items"][0]["peer"]["local_id"]
@@ -91,9 +94,10 @@ def read_chat(message, session, names, markup_with_subscription, bot, unread_cou
             forward_message_def.get_forward_message(current_message, session, bot, message.chat.id, message_sender_name)
 
         elif current_attachment_count > 0:
-            all_attachments = get_attachments.get_attachments(mes["items"], current_attachment_count, i)
+            all_attachments = get_attachments.get_attachments(current_message, current_attachment_count, None)
             count_of_attachments = len(all_attachments[0])
             for current_attachment_in_message in range(0, count_of_attachments):
-                send_attachments.send_attachments(bot, all_attachments, message.chat.id, current_attachment_in_message)
+                send_attachments.send_attachments(bot, all_attachments, message.chat.id, current_attachment_in_message,
+                                                  message_sender_name, current_message["text"])
     bot.send_message(message.chat.id, "Больше сообщений нет", reply_markup=markup_with_subscription)
     session.method("messages.markAsRead", {"peer_id": names})
