@@ -7,21 +7,21 @@ import reply_read_def
 import auto_check_new_message
 import datebase_def
 import Info
-import message_for_user
+# import message_for_user
 import bot_messages
 
 bot = telebot.TeleBot(Info.TGbot_token, parse_mode=None)
 markup_with_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
 markup_without_subscription = types.ReplyKeyboardMarkup(resize_keyboard=True)
 datebase_def.renew_polling_threads(bot)
-check_messages_button = types.KeyboardButton('Проверка сообщений')
+check_messages_button = types.KeyboardButton('Проверка сообщений(Пока не работает)')
 subscribe_button = types.KeyboardButton('Подписаться')
 write_button = types.KeyboardButton('Написать сообщение')
 unsubscribe_button = types.KeyboardButton('Отписаться')
 help_button = types.KeyboardButton('Помощь')
 read_button = types.KeyboardButton("Прочитать сообщения")
 markup_without_subscription.add(subscribe_button, help_button)
-markup_with_subscription.add(check_messages_button, unsubscribe_button, help_button, write_button, read_button)
+markup_with_subscription.add(write_button, unsubscribe_button, read_button, help_button, check_messages_button)
 
 
 @bot.message_handler(commands=['start'])
@@ -43,6 +43,7 @@ def send_welcome(message):
 @bot.message_handler(content_types=['text'])
 def support(message):
     if message.chat.type == 'private':
+        sub = datebase_def.sub_check(message.chat.id)
         if message.text == subscribe_button.text:
             send = bot.send_message(message.chat.id,
                                     "Отправь сюда <ins>ссылку</ins> со страницы, на которой написано:\n"
@@ -54,7 +55,6 @@ def support(message):
                              reply_markup=markup_without_subscription)
             datebase_def.unsubscribe(message.chat.id)
         elif message.text == help_button.text:
-            sub = datebase_def.sub_check(message.chat.id)
             if sub:
                 bot.send_message(message.chat.id,
                                  text=bot_messages.support_reply,
@@ -67,25 +67,32 @@ def support(message):
                                  parse_mode="HTML"
                                  )
         elif message.text == check_messages_button.text:
-            sub = datebase_def.sub_check(message.chat.id)
-            if sub is True:
-                token = datebase_def.api_check(message.chat.id)
-                session = vk_api.VkApi(token=token)
-                message_for_user.get_last_message(session, 15, bot, markup_with_subscription, message.chat.id)
+            bot.send_message(message.chat.id, text="Пока не работает, но когда-нибудь будет",
+                             reply_markup=markup_with_subscription)
+            # if sub is True:
+            #     token = datebase_def.api_check(message.chat.id)
+            #     session = vk_api.VkApi(token=token)
+            #     message_for_user.get_last_message(session, 15, bot, markup_with_subscription, message.chat.id)
+            # else:
+            #     bot.send_message(message.chat.id, "Ты не подписался и не прислал токен!")
+        elif message.text == write_button.text:
+            if sub:
+                api_key = datebase_def.api_check(message.chat.id)
+                session = vk_api.VkApi(token=api_key)
+                names = reply_read_def.get_all_chats(message, session, bot)
+                bot.register_next_step_handler(message, processing, names, session)
             else:
                 bot.send_message(message.chat.id, "Ты не подписался и не прислал токен!")
-        elif message.text == write_button.text:
-            api_key = datebase_def.api_check(message.chat.id)
-            session = vk_api.VkApi(token=api_key)
-            names = reply_read_def.get_all_chats(message, session, bot)
-            bot.register_next_step_handler(message, processing, names, session)
         elif message.text == read_button.text:
-            api_key = datebase_def.api_check(message.chat.id)
-            session = vk_api.VkApi(token=api_key)
-            names = reply_read_def.get_all_chats(message, session, bot)
-            bot.register_next_step_handler(message, chat_reading, names, session)
-        elif message.text == "Отмена":
-            bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
+            if sub is True:
+                api_key = datebase_def.api_check(message.chat.id)
+                session = vk_api.VkApi(token=api_key)
+                names = reply_read_def.get_all_chats(message, session, bot)
+                bot.register_next_step_handler(message, chat_reading, names, session)
+            elif message.text == "Отмена":
+                bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
+            else:
+                bot.send_message(message.chat.id, "Ты не подписался и не прислал токен!")
 
 
 @bot.message_handler(content_types=['text'])

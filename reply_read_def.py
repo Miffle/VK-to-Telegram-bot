@@ -1,3 +1,5 @@
+import time
+
 from telebot import types
 
 import forward_message_def
@@ -78,20 +80,36 @@ def read_chat(message, session, names, markup_with_subscription, bot, unread_cou
         if dialog_type == "group":
             message_sender = session.method("groups.getById", {"group_id": group_local_id})
             message_sender_name = message_sender[0]["name"]
+            message_sender_url = f'vk.com/club{group_local_id}'
         else:
             message_sender = session.method("users.get", {"user_ids": current_message["from_id"]})
             message_sender_name = message_sender[0]["first_name"] + " " + message_sender[0]["last_name"]
+            message_sender_url = f'vk.com/id{current_message["from_id"]}'
         current_attachment = mes["items"][i]["attachments"]
         current_attachment_count = len(current_attachment)
         if (current_attachment_count == 0) and ('reply_message' not in mes["items"][i]) and (len(
-                current_message["fwd_messages"]) == 0):
-            bot.send_message(message.chat.id, text=(f'<b>{message_sender_name}:</b> \n' + current_message["text"]),
-                             parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True)
+                current_message["fwd_messages"]) == 0) and ('action' not in current_message):
+            bot.send_message(message.chat.id, text=(
+                    f'<b><a href="{message_sender_url}">{message_sender_name}</a>:</b>  \n' + current_message["text"]),
+                             parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True,
+                             disable_web_page_preview=True)
+            time.sleep(1)
         elif 'reply_message' in mes["items"][i]:
             forward_message_def.get_reply_message(current_message, session, bot, message.chat.id, message_sender_name,
                                                   message_text=current_message["text"])
         elif len(current_message['fwd_messages']) != 0:
             forward_message_def.get_forward_message(current_message, session, bot, message.chat.id, message_sender_name)
+        elif 'action' in current_message:
+            if current_message['action']['type'] == 'chat_kick_user':
+                bot.send_message(message.chat.id,
+                                 text=f"Пользователь <b><a href='{message_sender_url}'>{message_sender_name}</a></b> "
+                                      f"вышел из беседы(или его кикнули)",
+                                 parse_mode="HTML", disable_notification=True, disable_web_page_preview=True)
+            elif current_message['action']['type'] == 'chat_invite_user':
+                bot.send_message(message.chat.id,
+                                 text=f"Пользователь <b><a href='{message_sender_url}'>{message_sender_name}</a></b> "
+                                      f"вернулся(или его пригласили/сам зашёл)",
+                                 parse_mode="HTML", disable_notification=True, disable_web_page_preview=True)
 
         elif current_attachment_count > 0:
             all_attachments = get_attachments.get_attachments(current_message, current_attachment_count, None)

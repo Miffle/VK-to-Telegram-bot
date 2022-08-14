@@ -8,8 +8,10 @@ def send_attachments(bot, all_attachments, chat_id, i, message_sender_name=None,
     :param all_attachments: Tuple of attachments from get_attachments
     :param chat_id: Telegram user id
     :param i: current attachment id (Usually this function is called in for)
-    :param message_sender_name: if this attachments isn't from forward or reply message - vk message sender name (optional) default value is None
-    :param message_text: if this attachments isn't from forward or reply message - vk message text (optional) default value is None
+    :param message_sender_name: if this attachments isn't from forward or reply message - vk message sender name
+    (optional) default value is None
+    :param message_text: if this attachments isn't from forward or reply message - vk message text (optional) default
+    value is None
     :return:
     """
     if message_sender_name is None and message_text is None:
@@ -109,4 +111,4 @@ def send_attachments(bot, all_attachments, chat_id, i, message_sender_name=None,
                 bot.send_message(chat_id, text=f"<b>{message_sender_name}:</b> {message_text}\n{all_attachments[1][i]}",
                                  parse_mode="HTML",
                                  disable_notification=True)
-    time.sleep(2)
+    time.sleep(1)
