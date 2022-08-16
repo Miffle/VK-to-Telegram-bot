@@ -48,6 +48,7 @@ datebase_def.renew_polling_threads(bot)
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if message.chat.type == 'private':
+        datebase_def.add_on_start(message.chat.id)
         sub = datebase_def.sub_check(message.chat.id)
         if sub is True:
             bot.send_message(message.chat.id,
@@ -186,24 +187,39 @@ def chat_reading(message, names, session):
     if message.text != "Отмена":
         if message.text == (names[0][0] + f"({names[2][0]})"):
             reply_read_def.read_chat(message, session, names[1][0], bot, names[2][0])
-            bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
-            bot.register_next_step_handler(message, reading, session, names[1][0])
+            if names[2][0] != '0':
+                bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
+                bot.register_next_step_handler(message, reading, session, names[1][0])
+            else:
+                bot.send_message(message.chat.id, "Всё", reply_markup=markup_with_subscription)
         elif message.text == (names[0][1] + f"({names[2][1]})"):
             reply_read_def.read_chat(message, session, names[1][1], bot, names[2][1])
-            bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
-            bot.register_next_step_handler(message, reading, session, names[1][1])
+            if names[2][1] != '0':
+                bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
+                bot.register_next_step_handler(message, reading, session, names[1][1])
+            else:
+                bot.send_message(message.chat.id, "Всё", reply_markup=markup_with_subscription)
         elif message.text == (names[0][2] + f"({names[2][2]})"):
             reply_read_def.read_chat(message, session, names[1][2], bot, names[2][2])
-            bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
-            bot.register_next_step_handler(message, reading, session, names[1][2])
+            if names[2][2] != '0':
+                bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
+                bot.register_next_step_handler(message, reading, session, names[1][2])
+            else:
+                bot.send_message(message.chat.id, "Всё", reply_markup=markup_with_subscription)
         elif message.text == (names[0][3] + f"({names[2][3]})"):
             reply_read_def.read_chat(message, session, names[1][3], bot, names[2][3])
-            bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
-            bot.register_next_step_handler(message, reading, session, names[1][3])
+            if names[2][3] != '0':
+                bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
+                bot.register_next_step_handler(message, reading, session, names[1][3])
+            else:
+                bot.send_message(message.chat.id, "Всё", reply_markup=markup_with_subscription)
         elif message.text == (names[0][4] + f"({names[2][4]})"):
             reply_read_def.read_chat(message, session, names[1][4], bot, names[2][4])
-            bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
-            bot.register_next_step_handler(message, reading, session, names[1][4])
+            if names[2][4] != '0':
+                bot.send_message(message.chat.id, "Отметить прочитанным?", reply_markup=yes_no_markup)
+                bot.register_next_step_handler(message, reading, session, names[1][4])
+            else:
+                bot.send_message(message.chat.id, "Всё", reply_markup=markup_with_subscription)
 
     else:
         bot.send_message(message.chat.id, "Ок", reply_markup=markup_with_subscription)
