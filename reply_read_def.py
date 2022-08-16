@@ -4,6 +4,7 @@ from telebot import types
 
 import forward_message_def
 import get_attachments
+
 import send_attachments
 
 
@@ -16,7 +17,7 @@ def get_all_chats(message, session, bot):
     3 - Кол-во непрочитанных
     '''
     count_of_chats = 5
-    chats_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    chats_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     conversation_response = session.method("messages.getConversations", {"count": count_of_chats})
 
     for current_chat in range(0, count_of_chats):
@@ -66,7 +67,7 @@ def get_all_chats(message, session, bot):
     return names
 
 
-def read_chat(message, session, names, markup_with_subscription, bot, unread_count):
+def read_chat(message, session, names, bot, unread_count):
     if unread_count == '0':
         count_of_messages = 5
     else:
@@ -91,7 +92,7 @@ def read_chat(message, session, names, markup_with_subscription, bot, unread_cou
                 current_message["fwd_messages"]) == 0) and ('action' not in current_message):
             bot.send_message(message.chat.id, text=(
                     f'<b><a href="{message_sender_url}">{message_sender_name}</a>:</b>  \n' + current_message["text"]),
-                             parse_mode='HTML', reply_markup=markup_with_subscription, disable_notification=True,
+                             parse_mode='HTML', disable_notification=True,
                              disable_web_page_preview=True)
             time.sleep(1)
         elif 'reply_message' in mes["items"][i]:
@@ -117,5 +118,3 @@ def read_chat(message, session, names, markup_with_subscription, bot, unread_cou
             for current_attachment_in_message in range(0, count_of_attachments):
                 send_attachments.send_attachments(bot, all_attachments, message.chat.id, current_attachment_in_message,
                                                   message_sender_name, current_message["text"])
-    bot.send_message(message.chat.id, "Больше сообщений нет", reply_markup=markup_with_subscription)
-    session.method("messages.markAsRead", {"peer_id": names})

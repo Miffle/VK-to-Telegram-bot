@@ -4,7 +4,8 @@ def get_attachments(vk_message, attachments_count, current_fwd_message=None):
     :param vk_message: current message with attachments
     :param attachments_count: Number of attachments in messages
     :param current_fwd_message: The number of the forwarded message(Optional) default value is None
-    :return: all attachments in current_message: 1 - url, 2 - type of attachments, 3 - transcript of audio message or title of video/audio/post/document or 0
+    :return: all attachments in current_message: 1 - url, 2 - type of attachments, 3 - transcript of audio message or
+     title of video/audio/post/document or 0
     """
     attachments = ([], [], [])
     for attachment in range(0, attachments_count):
