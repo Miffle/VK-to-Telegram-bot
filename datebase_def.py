@@ -4,6 +4,16 @@ import threading
 import auto_check_new_message
 
 
+def add_on_start(userid):
+    connection = sqlite3.connect('identifier.sqlite')
+    cursor = connection.cursor()
+    result = cursor.execute('SELECT * FROM `Users` WHERE `user_id` = ?', (userid,)).fetchall()
+    if not bool(len(result)):
+        cursor.execute("INSERT INTO `Users` VALUES(?, ?, ?);", (userid, False, 0))
+    connection.commit()
+    connection.close()
+
+
 def insert_in_db(userid, vk_user_api):
     connection = sqlite3.connect('identifier.sqlite')
     cursor = connection.cursor()
